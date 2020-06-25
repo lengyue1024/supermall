@@ -379,6 +379,152 @@ API服务器连接数据库，从数据库中进行数据请求和返回数据
 
 SPA：整个网页只有一个html页面。
 
+一个url对应一套组件
+
+前端路由的核心：
+- 改变url，但是页面不进行整体的刷新
+
+### vue-router
+适合用于构建单页面应用。
+
+安装和使用vue-router
+1. 安装
+npm install vue-router --save
+2. 在模块化工程中使用它（因为是一个插件，所以可以通过Vue.use()来安装路由功能）
+- 导入路由对象，并且调用Vue.use(VueRouter)
+- 创建路由实例，并且传入路由映射配置
+- 在Vue实例中挂载创建的路由实例
+
+
+开始创建：
+在src目录下创建router文件夹，用于放置路由的配置文件。
+创建index.js文件。
+``` js
+// index.js
+// 配置路由相关的信息
+import VueRouter from 'vue-router'
+import Vue from 'vue'
+
+// 1.通过Vue.use(插件),安装插件
+Vue.use(VueRouter)
+
+// 配置路由和组件的应用关系
+const routes = []
+// 2. 创建VueRouter对象
+// {}里传入optios选项
+const router = new VueRouter({
+   // ES6写法，ES5写法，routes：routes（第一个是VueRouetr实例的options属性，第二个是上面的数组routes
+    routes
+})
+
+// 3. 将router对象传入到Vue实例中(导出)
+export default router
+```
+4. 在main.js中进行导入，然后使用
+
+``` js
+// main.js
+import Vue from 'vue'
+import App from './APP'
+import router from './router'
+
+new Vue({
+    el: '#app',
+    router: router,
+    render: h=>h(App)
+})
+```
+
+使用vue-router步骤:
+- 创建路由组件
+- 配置路由映射：组件和路径映射关系
+- 使用路由：通过<router-link>和<router-view>
+
+
+#### 配置路由映射
+``` js
+import Home from '../components/Home'
+import About from '../components/About'
+
+const routes = [
+    {
+        // path选项的意思不是组件的路径，而是url的路径，当出现这个路径的适合，我们显示这个组件
+        path: '/home',
+        component: Home
+    },
+    {
+        path: '/about',
+        component: About
+    }
+]
+```
+使用路由：
+在APP.vue中使用
+``` js
+<template>
+    <div id="app">
+        <router-link to="/home">首页</router-link>
+        <router-link to="/about">关于</router-link>
+        <router-view></router-view>
+    </div>
+</template>
+```
+
+<router-view>其实和html标签一样，也是起到一个占位的目的，在哪里放置<router-view>标签，就意味着你需要在哪里展示路由的页面内容。
+显示路由内容信息。
+
+
+<router-link>：该标签是一个vue-router已经内置的组件，它会被渲染成一个<a>标签
+<router-view>：该标签会根据当前的路径，动态选染出不同的组件（其实就是给组件内容站一个位）
+
+网页的其他内容，比如顶部的标题/导肮，或者底部的一些版权信息等会和<router-view>处于同一个等级。
+在路由切换时，切换的是<router-view>挂载的组件，其他内容不会发生改变。
+
+
+
+#### 路由的默认路径
+我们这里还有一个不太好的实现：
+- 默认情况下，进入网站的首页，我们希望<router-view>渲染首页的内容
+- 但是我们的实现中，默认没有显示首页组件，必须让用户点击才可以
+
+如何可以让路径默认跳到首页，并且<router-view>渲染首页组件呢？
+非常简单，我们只需要配置多配置一个映射就可以了。
+
+``` js
+const routes = [
+    // 添加路由映射
+    {
+        path: '/',
+        redirect: '/home'
+    }
+]
+```
+配置解析：
+- 我们在routes中又配置了一个映射
+- path配置的是根路径： /
+- redirect是重定向，也就是我们将根路径重定向到/home路径下，这样就可以得到我们想要的结果了
+
+
+改变路径的方式有两种：
+1. url的hash
+2. HTML5的history
+3. 默认情况下，路径的改变使用的url的hash
+
+如果希望使用html5的history模式，非常简单，进行如下配置即可。
+``` js
+const routes = new VueRouter({
+    routes,
+    mode: 'history'
+})
+```
+
+router-link的其他属性:
+- to:用于指定跳转的路径
+- tag：指定<router-link>之后渲染成什么组件，比如上面的代码会被渲染成一个<li>元素，而不是<a>。
+`<router-link tag="link">`
+- 
+
+
 
 
 
@@ -462,9 +608,58 @@ Vuex是一个转为vuejs应用程序开发的状态管理模式
 它采用 集中式存储管理 应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化
 Vuex也集成到vue的官方调试工具devtools。
 
+>国内大部分技术网站都是用各种高大上术语来解释术语。劝退了好多人 。也给很多刚入行的同学读完一遍后一脸懵逼，导致出现畏难情绪。文档描述及其不友好。
+
+
+状态管理是什么？
+- 状态管理模式，集中式存储管理 这些名词看起来就非常高大上，让人捉摸不透。
+- 其实，可以简单的将其看作把需要多个组件共享的变量全部存储在一个对象里面。
+- 然后，将这个对象放在顶层的vue实例中，让其组件可以使用。
+- 那么，多个组件是不是就可以共享这个对象中的所有变量属性呢？
 
 
 
+## Vue的options选项
+
+创建vue实例传入的options
+我们在创建vue实例的时候，传入了一个对象options
+这个options可以包含哪些选项呢？
+
+- el
+类型：string | HTMLElement
+作用：决定之后vue实例会管理哪一个DOM
+
+- data
+类型： Object(Vue实例是对象) | Function（组件当中data必须是一个函数）
+作用：Vue实例对应的数据对象
+
+- methods
+类型：{[key:string]:Function}
+作用：定义属于Vue的一些方法，可以在其他地方调用，也可以在指令中使用
+
+
+### 生命周期
+
+生命周期：
+
+
+## template
+模板语法
+
+
+三种方式添加css
+
+- 外部样式表
+> css保存在.css文件中
+>在html里使用<link>标签引用
+
+- 内部样式表
+> 不使用外部css文件
+> 将css放在html<style>里
+
+- 内联样式
+> 仅影响一个元素
+> 在html元素的style属性中添加
 
 
 

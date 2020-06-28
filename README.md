@@ -1,4 +1,4 @@
-<img align="right" src="public/vue.png">
+<img align="right" src="public/favicon.ico">
 
 # SuperMall
 > vuejs project 

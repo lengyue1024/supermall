@@ -1,4 +1,4 @@
-<img align="right" src="public/logo.png" width="50">
+<img align="right" src="public/logo.png" width="100">
 
 # SuperMall
 > vuejs project 
